@@ -37,7 +37,7 @@ FusionEKF::FusionEKF() {
     * Set the process and measurement noises
   */
   H_laser_ << 1, 0, 0, 0,
-              0, 0, 0, 0;
+              0, 1, 0, 0;
 
   ekf_.P_ = MatrixXd(4,4);
   ekf_.F_ = MatrixXd(4,4);
@@ -82,8 +82,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       Initialize state.
       */
     }
-    ekf_.F_ << 1, 0, 0, 0,
-              0, 1, 0, 0,
+    ekf_.F_ << 1, 0, 1, 0,
+              0, 1, 0, 1,
               0, 0, 1, 0,
               0, 0, 0, 1;
     ekf_.P_ << 1, 0, 0, 0,
@@ -147,6 +147,12 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.UpdateEKF(measurement_pack.raw_measurements_);
   } else {
     // Laser updates
+    ekf_.H_ = H_laser_;
+    ekf_.R_ = R_laser_;
+    VectorXd meas = VectorXd(2);
+    meas(0) = measurement_pack.raw_measurements_(0);
+    meas(1) = measurement_pack.raw_measurements_(1);
+    ekf_.Update(meas);
   }
 
   // print the output

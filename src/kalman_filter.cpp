@@ -36,9 +36,10 @@ void KalmanFilter::Update(const VectorXd &z) {
   TODO:
     * update the state by using Kalman Filter equations
   */
+    MatrixXd H_t = H_.transpose();
     VectorXd y = z - H_ * x_;
-    MatrixXd S = H_ * P_ * H_.transpose() + R_;
-    MatrixXd K =  P_ * H_.transpose() * S.inverse();
+    MatrixXd S = H_ * P_ * H_t + R_;
+    MatrixXd K =  P_ * H_t * S.inverse();
     MatrixXd I = MatrixXd::Identity(4,4);
 
     //new state
@@ -67,8 +68,9 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   z_pred << rho, theta, rho_dot;
   VectorXd y = z - z_pred;
   
-  MatrixXd S = H_ * P_ * H_.transpose() + R_;
-  MatrixXd K =  P_ * H_.transpose() * S.inverse();
+  MatrixXd H_t = H_.transpose();
+  MatrixXd S = H_ * P_ * H_t + R_;
+  MatrixXd K =  P_ * H_t * S.inverse();
   MatrixXd I = MatrixXd::Identity(4,4);
 
   if (fabs(y(1)) > 1){ // apparently when y_ changes from positive to negative (but not vice/versa?) y(1) sign gets swapped

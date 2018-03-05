@@ -73,7 +73,8 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   MatrixXd K =  P_ * H_t * S.inverse();
   MatrixXd I = MatrixXd::Identity(4,4);
 
-  if (fabs(y(1)) > 1 && z(1)+theta < 1){ // apparently when y_ changes from positive to negative (but not vice/versa?) y(1) sign gets swapped
+  float tdiff_ab = fabs(y(1));
+  if (tdiff_ab > 1 && z(1)+theta < tdiff_ab){ // apparently when y_ changes from positive to negative (but not vice/versa?) y(1) sign gets swapped
       y(1) = z(1)+theta;}
 
   //new state

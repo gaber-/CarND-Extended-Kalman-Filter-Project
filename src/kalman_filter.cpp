@@ -1,4 +1,5 @@
 #include "kalman_filter.h"
+using namespace std;
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -42,8 +43,6 @@ void KalmanFilter::Update(const VectorXd &z) {
 
     //new state
     x_ = x_ + (K * y);
-    cout << "x_ actual" << endl;
-  cout << K*y << endl;
     P_ = (I - K * H_) * P_;
 }
 
@@ -52,29 +51,31 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   TODO:
     * update the state by using Extended Kalman Filter equations
   */
-  cout << z.size() << endl;
-  float x = z(0);
-  float y_ = z(1);
-  float vx = z(2);
-  float vy;
-  if (z.size() == 4)
-      vy = z(3);
-  else
-      vy = 1;
+  float x = x_(0);
+  float y_ = x_(1);
+  float vx = x_(2);
+  float vy = x_(3);
   float rho = sqrt(x*x + y_*y_);
-  float theta = atan2(x, y_);
-  float rho_dot = (x*vx, y_*vy)/rho;
+  if (fabs(rho) < 0.00001){
+      x +=0.001;
+      y_ +=0.001;
+      rho = sqrt(x*x + y_*y_);
+  }
+  float theta = atan2(y_, x);
+  float rho_dot = (x*vx + y_*vy)/rho;
   VectorXd z_pred = VectorXd(3);
   z_pred << rho, theta, rho_dot;
   VectorXd y = z - z_pred;
+  
   MatrixXd S = H_ * P_ * H_.transpose() + R_;
   MatrixXd K =  P_ * H_.transpose() * S.inverse();
   MatrixXd I = MatrixXd::Identity(4,4);
 
+  if (fabs(y(1)) > 1){ // apparently when y_ changes from positive to negative (but not vice/versa?) y(1) sign gets swapped
+      y(1) = z(1)+theta;}
+
   //new state
   x_ = x_ + (K * y);
-    cout << "x_ actual" << endl;
-  cout << K*y << endl;
   P_ = (I - K * H_) * P_;
 
 }
